@@ -8,6 +8,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
@@ -20,5 +22,14 @@ public class Film {
     private final LocalDate releaseDate;
     @Positive(message = "Duration should be positive")
     private final int duration;
+    private final Set<Long> likes = new HashSet<>();
     private long id;
+
+    public void addLike(User user) {
+        likes.add(user.getId());
+    }
+
+    public void removeLike(User user) {
+        likes.remove(user.getId());
+    }
 }
