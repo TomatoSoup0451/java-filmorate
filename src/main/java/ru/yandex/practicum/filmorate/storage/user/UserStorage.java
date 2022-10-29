@@ -15,7 +15,7 @@ public interface UserStorage {
 
     User getUser(long id);
 
-    List<User> getMultipleUsers(long... id);
-
     List<User> getUserFriends(long id);
+
+    void updateFriendship(User user1, User user2, boolean isAdded);
 }

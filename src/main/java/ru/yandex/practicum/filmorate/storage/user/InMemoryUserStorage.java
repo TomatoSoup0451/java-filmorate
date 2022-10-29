@@ -51,26 +51,23 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getMultipleUsers(long... id) {
-        List<User> result = new ArrayList<>();
-        for (long i : id) {
-            if (!users.containsKey(i)) {
-                throw new IdNotFoundException("User with id = " + i + " not found");
-            }
-            result.add(users.get(i));
-        }
-        return result;
-    }
-
-    @Override
     public List<User> getUserFriends(long id) {
         if (!users.containsKey(id)) {
             throw new IdNotFoundException("User with id = " + id + " not found");
         }
         List<User> result = new ArrayList<>();
-        for (long l : users.get(id).getFriends()) {
+        for (long l : users.get(id).getFriends().keySet()) {
             result.add(users.get(l));
         }
         return result;
+    }
+
+    @Override
+    public void updateFriendship(User user, User friend, boolean isAdded) {
+        if (isAdded) {
+            user.addFriend(friend);
+        } else {
+            user.removeFriend(friend);
+        }
     }
 }

@@ -2,14 +2,15 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @Builder
@@ -24,15 +25,36 @@ public class User {
 
     @Past(message = "Birthday should be in the past")
     private final LocalDate birthday;
-    private final Set<Long> friends = new HashSet<>();
+    //Contains id of all friends. If boolean == true - friendship mutual
+    private final Map<Long, Boolean> friends = new HashMap<>();
     private long id;
     private String name;
 
+    /*
+    If new friend already have id of current object in friends -> friendship mutual
+     */
     public void addFriend(User user) {
-        friends.add(user.getId());
+        if (user.getFriends().containsKey(this.getId())) {
+            friends.put(user.getId(), true);
+        } else {
+            friends.put(user.getId(), false);
+        }
+    }
+
+    public void addFriend(Long id, Boolean isMutual) {
+        friends.put(id, isMutual);
     }
 
     public void removeFriend(User user) {
-        friends.remove(user.getId());
+        if (friends.containsKey(user.getId())) {
+            friends.remove(user.getId());
+            if (user.getFriends().containsKey(this.getId())) {
+                user.getFriends().put(this.getId(), false);
+            }
+        } else {
+            throw new IdNotFoundException("User with id=" + user.getId() + " not found in user" +
+                    " with id=" + this.getId() + " friends list");
+        }
     }
+
 }
