@@ -2,13 +2,15 @@ package ru.yandex.practicum.filmorate.dao.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 @Component
@@ -20,20 +22,19 @@ public class MpaDaoImpl implements MpaDao {
 
     @Override
     public Mpa findMpaById(int id) {
-        SqlRowSet mpaRows = jdbcTemplate.queryForRowSet("select * from mpa where id = ?", id);
-        if (mpaRows.next()) {
-            Mpa mpa = new Mpa(
-                    mpaRows.getInt("id"),
-                    mpaRows.getString("name"));
-            return mpa;
-        } else {
+        try {
+            return jdbcTemplate.queryForObject("select * from mpa where id = ?", this::mapMpaToGenre, id);
+        } catch (EmptyResultDataAccessException e) {
             throw new IdNotFoundException("MPA rating with id = " + id + " not found");
         }
     }
 
     @Override
     public List<Mpa> findAllMpaRatings() {
-        return jdbcTemplate.query("select * from mpa", (rs, rowNum) ->
-                new Mpa(rs.getInt("id"), rs.getString("name")));
+        return jdbcTemplate.query("select * from mpa", this::mapMpaToGenre);
+    }
+
+    private Mpa mapMpaToGenre(ResultSet resultSet, int rowNum) throws SQLException {
+        return new Mpa(resultSet.getInt("id"), resultSet.getString("name"));
     }
 }

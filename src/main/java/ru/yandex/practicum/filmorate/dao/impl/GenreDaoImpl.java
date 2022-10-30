@@ -1,13 +1,15 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.GenreDao;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 @Component
@@ -18,26 +20,25 @@ public class GenreDaoImpl implements GenreDao {
 
     @Override
     public Genre findGenreById(int id) {
-        SqlRowSet genreRows = jdbcTemplate.queryForRowSet("select * from genres where id = ?", id);
-        if (genreRows.next()) {
-            return new Genre(
-                    genreRows.getInt("id"),
-                    genreRows.getString("name"));
-        } else {
+        try {
+            return jdbcTemplate.queryForObject("select * from genres where id = ?", this::mapRowToGenre, id);
+        } catch (EmptyResultDataAccessException e) {
             throw new IdNotFoundException("Genre with id = " + id + " not found");
         }
     }
 
     @Override
     public List<Genre> findAllGenres() {
-        return jdbcTemplate.query("select * from genres", (rs, rowNum) ->
-                new Genre(rs.getInt("id"), rs.getString("name")));
+        return jdbcTemplate.query("select * from genres", this::mapRowToGenre);
     }
 
     @Override
     public List<Genre> findAllGenresByMovieId(long filmId) {
         return jdbcTemplate.query("select * from genres where id in " +
-                "(select genre_id from film_genres where film_id = ?)", (rs, rowNum) ->
-                new Genre(rs.getInt("id"), rs.getString("name")), filmId);
+                "(select genre_id from film_genres where film_id = ?)", this::mapRowToGenre, filmId);
+    }
+
+    private Genre mapRowToGenre(ResultSet resultSet, int rowNum) throws SQLException {
+        return new Genre(resultSet.getInt("id"), resultSet.getString("name"));
     }
 }
