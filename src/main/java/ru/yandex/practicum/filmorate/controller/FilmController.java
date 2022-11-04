@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
@@ -15,13 +15,17 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequiredArgsConstructor
 public class FilmController {
 
     private final Map<Long, Film> films = new HashMap<>();
     private final FilmStorage filmStorage;
     private final FilmService filmService;
     private final long id = 0;
+
+    public FilmController(@Qualifier("dbFilmStorage") FilmStorage filmStorage, FilmService filmService) {
+        this.filmStorage = filmStorage;
+        this.filmService = filmService;
+    }
 
     @PostMapping("/films")
     public Film createFilm(@Valid @RequestBody Film film, BindingResult errors) {

@@ -5,10 +5,12 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.annotations.ReleaseDateValidation;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -23,10 +25,17 @@ public class Film {
     @Positive(message = "Duration should be positive")
     private final int duration;
     private final Set<Long> likes = new HashSet<>();
+    private final List<Genre> genres;
+    @NotNull
+    private final Mpa mpa;
     private long id;
 
     public void addLike(User user) {
         likes.add(user.getId());
+    }
+
+    public void addLike(Long userId) {
+        likes.add(userId);
     }
 
     public void removeLike(User user) {

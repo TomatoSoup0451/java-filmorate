@@ -47,16 +47,4 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         return films.get(id);
     }
-
-    @Override
-    public List<Film> getMultipleFilms(long... id) {
-        List<Film> result = new ArrayList<>();
-        for (long i : id) {
-            if (!films.containsKey(i)) {
-                throw new IdNotFoundException("Film with id = " + i + " not found");
-            }
-            result.add(films.get(i));
-        }
-        return result;
-    }
 }
